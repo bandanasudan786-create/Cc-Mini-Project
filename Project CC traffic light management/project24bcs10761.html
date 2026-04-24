@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Smart Traffic System</title>
+    <style>
+        body {
+            background: #222;
+            color: white;
+            font-family: Arial;
+            text-align: center;
+        }
+
+        h1 { margin-top: 20px; }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        .signal {
+            width: 100px;
+            padding: 15px;
+            margin: 15px;
+            background: #111;
+            border-radius: 15px;
+        }
+
+        .light {
+            width: 50px;
+            height: 50px;
+            margin: 8px auto;
+            border-radius: 50%;
+            opacity: 0.3;
+        }
+
+        .red { background: red; }
+        .yellow { background: yellow; }
+        .green { background: green; }
+
+        .active {
+            opacity: 1;
+            box-shadow: 0 0 10px white;
+        }
+
+        input, button {
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+            border: none;
+        }
+
+        button {
+            background: #00c6ff;
+            color: white;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<h1>🚦 Smart Traffic System</h1>
+
+<input type="number" id="num" placeholder="Number of signals">
+<button onclick="createSignals()">Create</button>
+
+<div id="inputs"></div>
+
+<div class="container" id="signals"></div>
+
+<button onclick="startSimulation()">Start Simulation</button>
+
+<script>
+let signalList = [];
+let times = [];
+
+function calculateTime(v) {
+    if (v < 10) return 5;
+    else if (v < 20) return 10;
+    else return 15;
+}
+
+function createSignals() {
+    let n = document.getElementById("num").value;
+
+    let inputDiv = document.getElementById("inputs");
+    let container = document.getElementById("signals");
+
+    inputDiv.innerHTML = "";
+    container.innerHTML = "";
+    signalList = [];
+    times = [];
+
+    for (let i = 0; i < n; i++) {
+
+        // Input for vehicles
+        let inp = document.createElement("input");
+        inp.placeholder = "Vehicles at Signal " + (i+1);
+        inp.id = "v" + i;
+        inputDiv.appendChild(inp);
+
+        // Signal UI
+        let div = document.createElement("div");
+        div.className = "signal";
+
+        div.innerHTML = `
+            <div class="light red"></div>
+            <div class="light yellow"></div>
+            <div class="light green"></div>
+            <p>Signal ${i + 1}</p>
+        `;
+
+        container.appendChild(div);
+        signalList.push(div);
+    }
+}
+
+function setSignal(signal, color) {
+    let lights = signal.querySelectorAll(".light");
+    lights.forEach(l => l.classList.remove("active"));
+
+    if (color === "red") lights[0].classList.add("active");
+    if (color === "yellow") lights[1].classList.add("active");
+    if (color === "green") lights[2].classList.add("active");
+}
+
+function startSimulation() {
+    let n = signalList.length;
+
+    // Get timings from input
+    for (let i = 0; i < n; i++) {
+        let v = document.getElementById("v" + i).value;
+        times[i] = calculateTime(v);
+    }
+
+    let i = 0;
+
+    function runCycle() {
+        let current = signalList[i];
+        let t = times[i];
+
+        setSignal(current, "green");
+
+        setTimeout(() => {
+            setSignal(current, "yellow");
+        }, t * 1000);
+
+        setTimeout(() => {
+            setSignal(current, "red");
+            i = (i + 1) % n;
+            runCycle();
+        }, (t + 2) * 1000);
+    }
+
+    runCycle();
+}
+</script>
+
+</body>
+</html>
